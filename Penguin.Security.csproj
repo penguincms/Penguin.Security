@@ -1,35 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseFile>License.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/penguincms/Penguin.Security</PackageProjectUrl>
-	<PackageIconUrl>http://www.penguinms.com/client/images/pg.png</PackageIconUrl>
     <Version>1.1.7</Version>
-	<IncludeSymbols>true</IncludeSymbols>    
-<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-
-	<Description>Tin-can grade encryption utilities for performing file encryption on disk.</Description>
+    <Description>Tin-can grade encryption utilities for performing file encryption on disk.</Description>
   </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningsAsErrors>NU1605, CS1591</WarningsAsErrors>
-    <OutputPath></OutputPath>
-    <DocumentationFile>Penguin.Security.xml</DocumentationFile>
-  </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	<DebugType>full</DebugType>
-      <DocumentationFile>Penguin.Security.xml</DocumentationFile>
-    </PropertyGroup>
-  
-  <ItemGroup>
-    <None Include="License.txt">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
+  <Import Project="Penguin.Projects.Shared\Penguin.Projects.Shared.csproj" />
 </Project>
