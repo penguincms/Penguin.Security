@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>Penguin.Security.Local</name>
+        <name>Penguin.Security</name>
     </assembly>
     <members>
         <member name="T:Penguin.Security.Encryption.AES">
