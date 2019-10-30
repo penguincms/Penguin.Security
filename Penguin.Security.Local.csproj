@@ -4,6 +4,8 @@
     <PackageProjectUrl>https://github.com/penguincms/Penguin.Security</PackageProjectUrl>
     <Version>1.1.7</Version>
     <Description>Tin-can grade encryption utilities for performing file encryption on disk.</Description>
+    <AssemblyName>Penguin.Security</AssemblyName>
+    <RootNamespace>Penguin.Security</RootNamespace>
   </PropertyGroup>
   <Import Project="Penguin.Projects.Shared\Penguin.Projects.Shared.csproj" />
 </Project>
