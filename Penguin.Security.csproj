@@ -6,6 +6,7 @@
     <Description>Tin-can grade encryption utilities for performing file encryption on disk.</Description>
     <AssemblyName>Penguin.Security</AssemblyName>
     <RootNamespace>Penguin.Security</RootNamespace>
+    <DocumentationFile>Penguin.Security.xml</DocumentationFile>
   </PropertyGroup>
   <Import Project="Penguin.Projects.Shared\Penguin.Projects.Shared.csproj" />
 </Project>
