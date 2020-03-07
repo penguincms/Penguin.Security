@@ -84,7 +84,10 @@ namespace Penguin.Security.Objects
         /// <summary>
         /// Manual method to delete the temporary file used to access the encrypted file
         /// </summary>
-        public void CleanUp() => this.CleanUp(null, null);
+        public void CleanUp()
+        {
+            this.CleanUp(null, null);
+        }
 
         /// <summary>
         /// Checks to see if the temporary file is currently being accessed
@@ -197,19 +200,19 @@ namespace Penguin.Security.Objects
 
         #endregion Enums
 
-        [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [Out] StringBuilder pszOut, ref uint pcchOut);
-
         private AES Crypto { get; set; }
 
         private SecureString Key { get; set; }
+
+        [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        internal static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [Out] StringBuilder pszOut, ref uint pcchOut);
 
         private void Init(SecureString password, byte[] salt, string file)
         {
             this.Crypto = new AES(salt);
             this.Key = password;
             this.EnableRaisingEvents = true;
-            this.Exited += this.CleanUp;
+            Exited += this.CleanUp;
 
             this.OriginalFilePath = file;
 

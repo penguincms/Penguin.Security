@@ -17,7 +17,7 @@ namespace Penguin.Security.Objects
         /// <param name="secureString">The source secure string</param>
         public SecureStringBytes(SecureString secureString)
         {
-            this.secureString = secureString ?? throw new ArgumentNullException("secureString");
+            this.secureString = secureString ?? throw new ArgumentNullException(nameof(secureString));
         }
 
         #endregion Constructors
@@ -43,7 +43,10 @@ namespace Penguin.Security.Objects
         /// <summary>
         /// Calls the clear function to flush out the memory used by this object
         /// </summary>
-        public void Dispose() => this.Clear();
+        public void Dispose()
+        {
+            this.Clear();
+        }
 
         /// <summary>
         /// Gets a byte array representing this secure string
@@ -64,7 +67,7 @@ namespace Penguin.Security.Objects
         #region Fields
 
         private byte[] bytes;
-        private SecureString secureString;
+        private readonly SecureString secureString;
 
         #endregion Fields
 

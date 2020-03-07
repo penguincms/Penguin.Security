@@ -33,14 +33,20 @@ namespace Penguin.Security.Encryption
         /// - Null if the Encrypted string is not Base64
         /// - Decrypted text if the parameter is valid
         /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public string Decrypt(string encrypted)
         {
+            if (encrypted is null)
+            {
+                throw new ArgumentNullException(nameof(encrypted));
+            }
+
             if (encrypted.Length == 0)
             { return ""; }
             try
             {
-                uint[] v = this.ToLongs(Convert.FromBase64String(encrypted));
-                uint[] k = this.ToLongs(this._cryptBytes);
+                uint[] v = ToLongs(Convert.FromBase64String(encrypted));
+                uint[] k = ToLongs(this._cryptBytes);
 
                 if (v.Length == 0)
                 {
@@ -72,7 +78,7 @@ namespace Penguin.Security.Encryption
                     sum -= delta;
                 }
 
-                string plaintext = _encoding.GetString(this.ToBytes(v)).TrimEnd('\0');
+                string plaintext = _encoding.GetString(ToBytes(v)).TrimEnd('\0');
                 return plaintext;
             }
             catch { }
@@ -86,28 +92,25 @@ namespace Penguin.Security.Encryption
         /// <returns></returns>
         public string Encrypt(string text)
         {
-            byte[] textBytes = this.GetByteForEncryption(text);
+            byte[] textBytes = GetByteForEncryption(text);
             // Convert the text into UTF-8 encoding (byte size)
-            uint[] v = this.ToLongs(textBytes);
+            uint[] v = ToLongs(textBytes);
 
             // Simply convert first 16 chars of password as key
-            uint[] k = this.ToLongs(this._cryptBytes);
+            uint[] k = ToLongs(this._cryptBytes);
 
             // Use UInt32 as the original is based on 'unsigned long' in C, which is equiv to UInt32 in .Net (and not ulong)
-            uint n = (uint)v.Length,
-                   z = v[n - 1],
-                   y = v[0],
-                   delta = 0x9e3779b9,
-                   e,
-                   q = 6 + (52 / n),
-                   sum = 0,
-                   p = 0;
+            uint n = (uint)v.Length, z = v[n - 1];
+
+            // Use UInt32 as the original is based on 'unsigned long' in C, which is equiv to UInt32 in .Net (and not ulong)
+            uint delta = 0x9e3779b9, e, q = 6 + (52 / n), sum = 0;
 
             while (q-- > 0)
             {
                 sum += delta;
                 e = sum >> 2 & 3;
-
+                uint p;
+                uint y;
                 for (p = 0; p < (n - 1); p++)
                 {
                     y = v[(p + 1)];
@@ -119,21 +122,20 @@ namespace Penguin.Security.Encryption
             }
 
             // Convert to Base64 so that Control characters doesnt break it
-            return Convert.ToBase64String(this.ToBytes(v));
+            return Convert.ToBase64String(ToBytes(v));
         }
 
         #endregion Methods
 
         #region Fields
 
-        private const short CRYPTO_KEY_LENGTH = 16;
         private const short MIN_ENCRYPTION_LENGTH = 6;
-        private static UTF8Encoding _encoding = new UTF8Encoding();
+        private static readonly UTF8Encoding _encoding = new UTF8Encoding();
         private readonly byte[] _cryptBytes;
 
         #endregion Fields
 
-        private byte[] GetByteForEncryption(string text)
+        private static byte[] GetByteForEncryption(string text)
         {
             byte[] bytes = _encoding.GetBytes(text);
             if (bytes.Length < MIN_ENCRYPTION_LENGTH)
@@ -149,7 +151,7 @@ namespace Penguin.Security.Encryption
         /// Convert array of longs back to utf-8 byte array
         /// </summary>
         /// <returns></returns>
-        private byte[] ToBytes(uint[] l)
+        private static byte[] ToBytes(uint[] l)
         {
             byte[] b = new byte[l.Length * 4];
 
@@ -168,7 +170,7 @@ namespace Penguin.Security.Encryption
         /// convert utf-8 byte to array of longs, each containing 4 chars to be manipulated
         /// </summary>
         /// <param name="s"></param>
-        private uint[] ToLongs(byte[] s)
+        private static uint[] ToLongs(byte[] s)
         {
             // note chars must be within ISO-8859-1 (with Unicode code-point < 256) to fit 4/long
             uint[] l = new uint[(int)Math.Ceiling(((decimal)s.Length / 4))];
