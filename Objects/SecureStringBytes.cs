@@ -66,8 +66,8 @@ namespace Penguin.Security.Objects
 
         #region Fields
 
-        private byte[] bytes;
         private readonly SecureString secureString;
+        private byte[] bytes;
 
         #endregion Fields
 
