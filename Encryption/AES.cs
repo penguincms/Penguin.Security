@@ -53,6 +53,11 @@ namespace Penguin.Security.Encryption
         /// <returns>A decrypted byte array</returns>
         public static byte[] AESDecryptBytes(byte[] cryptBytes, SecureString password, byte[] saltBytes)
         {
+            if (cryptBytes is null)
+            {
+                throw new ArgumentNullException(nameof(cryptBytes));
+            }
+
             byte[] clearBytes = null;
 
             using (SecureStringBytes secureStringBytes = new SecureStringBytes(password))
