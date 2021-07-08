@@ -33,7 +33,6 @@ namespace Penguin.Security.Encryption
         /// - Null if the Encrypted string is not Base64
         /// - Decrypted text if the parameter is valid
         /// </returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "<Pending>")]
         public string Decrypt(string encrypted)
         {
             if (encrypted is null)

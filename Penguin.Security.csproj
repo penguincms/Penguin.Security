@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageProjectUrl>https://github.com/penguincms/Penguin.Security</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/PenguinCMS/Penguin.Security</PackageProjectUrl>
     <Version>5.0.5</Version>
     <Description>Tin-can grade encryption utilities for performing file encryption on disk.</Description>
     <AssemblyName>Penguin.Security</AssemblyName>
