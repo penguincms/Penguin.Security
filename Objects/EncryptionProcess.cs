@@ -84,10 +84,7 @@ namespace Penguin.Security.Objects
         /// <summary>
         /// Manual method to delete the temporary file used to access the encrypted file
         /// </summary>
-        public void CleanUp()
-        {
-            this.CleanUp(null, null);
-        }
+        public void CleanUp() => this.CleanUp(null, null);
 
         /// <summary>
         /// Checks to see if the temporary file is currently being accessed

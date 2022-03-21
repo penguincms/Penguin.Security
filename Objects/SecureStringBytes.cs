@@ -43,10 +43,7 @@ namespace Penguin.Security.Objects
         /// <summary>
         /// Calls the clear function to flush out the memory used by this object
         /// </summary>
-        public void Dispose()
-        {
-            this.Clear();
-        }
+        public void Dispose() => this.Clear();
 
         /// <summary>
         /// Gets a byte array representing this secure string

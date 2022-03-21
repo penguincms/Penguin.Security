@@ -79,30 +79,21 @@ namespace Penguin.Security.IO
         /// <summary>
         /// Flushes and deletes this file instance
         /// </summary>
-        public void Delete()
-        {
-            Delete(this.TargetFile.FullName, this.Random);
-        }
+        public void Delete() => Delete(this.TargetFile.FullName, this.Random);
 
         /// <summary>
         /// Decrypts the file and reads back a byte array
         /// </summary>
         /// <param name="password">The password for the file</param>
         /// <returns>A decrypted byte array representing the file contents</returns>
-        public byte[] ReadAllBytes(SecureString password)
-        {
-            return this.Crypto.AESDecryptBytes(File.ReadAllBytes(this.TargetFile.FullName), password);
-        }
+        public byte[] ReadAllBytes(SecureString password) => this.Crypto.AESDecryptBytes(File.ReadAllBytes(this.TargetFile.FullName), password);
 
         /// <summary>
         /// Encrypts a byte array and writes it back to the file
         /// </summary>
         /// <param name="bytes">The byte array to write</param>
         /// <param name="password">The password to use to encrypt the file contents</param>
-        public void WriteAllBytes(byte[] bytes, SecureString password)
-        {
-            File.WriteAllBytes(this.TargetFile.FullName, this.Crypto.AESEncryptBytes(bytes, password));
-        }
+        public void WriteAllBytes(byte[] bytes, SecureString password) => File.WriteAllBytes(this.TargetFile.FullName, this.Crypto.AESEncryptBytes(bytes, password));
 
         #endregion Methods
 
