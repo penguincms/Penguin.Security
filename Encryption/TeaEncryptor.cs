@@ -63,16 +63,16 @@ namespace Penguin.Security.Encryption
 
                 while (sum != 0)
                 {
-                    e = sum >> 2 & 3;
+                    e = (sum >> 2) & 3;
 
-                    for (p = (n - 1); p > 0; p--)
+                    for (p = n - 1; p > 0; p--)
                     {
                         z = v[p - 1];
-                        y = v[p] -= (z >> 5 ^ y << 2) + (y >> 3 ^ z << 4) ^ (sum ^ y) + (k[p & 3 ^ e] ^ z);
+                        y = v[p] -= (((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ ((sum ^ y) + (k[(p & 3) ^ e] ^ z));
                     }
 
                     z = v[n - 1];
-                    y = v[0] -= (z >> 5 ^ y << 2) + (y >> 3 ^ z << 4) ^ (sum ^ y) + (k[p & 3 ^ e] ^ z);
+                    y = v[0] -= (((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ ((sum ^ y) + (k[(p & 3) ^ e] ^ z));
 
                     sum -= delta;
                 }
@@ -107,17 +107,17 @@ namespace Penguin.Security.Encryption
             while (q-- > 0)
             {
                 sum += delta;
-                e = sum >> 2 & 3;
+                e = (sum >> 2) & 3;
                 uint p;
                 uint y;
                 for (p = 0; p < (n - 1); p++)
                 {
-                    y = v[(p + 1)];
-                    z = v[p] += (z >> 5 ^ y << 2) + (y >> 3 ^ z << 4) ^ (sum ^ y) + (k[p & 3 ^ e] ^ z);
+                    y = v[p + 1];
+                    z = v[p] += (((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ ((sum ^ y) + (k[(p & 3) ^ e] ^ z));
                 }
 
                 y = v[0];
-                z = v[n - 1] += (z >> 5 ^ y << 2) + (y >> 3 ^ z << 4) ^ (sum ^ y) + (k[p & 3 ^ e] ^ z);
+                z = v[n - 1] += (((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4))) ^ ((sum ^ y) + (k[(p & 3) ^ e] ^ z));
             }
 
             // Convert to Base64 so that Control characters doesnt break it
@@ -157,7 +157,7 @@ namespace Penguin.Security.Encryption
             // Split each long value into 4 separate characters (bytes) using the same format as ToLongs()
             for (int i = 0; i < l.Length; i++)
             {
-                b[(i * 4)] = (byte)(l[i] & 0xFF);
+                b[i * 4] = (byte)(l[i] & 0xFF);
                 b[(i * 4) + 1] = (byte)(l[i] >> (8 & 0xFF));
                 b[(i * 4) + 2] = (byte)(l[i] >> (16 & 0xFF));
                 b[(i * 4) + 3] = (byte)(l[i] >> (24 & 0xFF));
@@ -172,17 +172,17 @@ namespace Penguin.Security.Encryption
         private static uint[] ToLongs(byte[] s)
         {
             // note chars must be within ISO-8859-1 (with Unicode code-point < 256) to fit 4/long
-            uint[] l = new uint[(int)Math.Ceiling(((decimal)s.Length / 4))];
+            uint[] l = new uint[(int)Math.Ceiling((decimal)s.Length / 4)];
 
             // Create an array of long, each long holding the data of 4 characters, if the last block is less than 4
             // characters in length, fill with ascii null values
             for (int i = 0; i < l.Length; i++)
             {
                 // Note: little-endian encoding - endianness is irrelevant as long as it is the same in ToBytes()
-                l[i] = ((s[i * 4])) +
-                       ((i * 4 + 1) >= s.Length ? (uint)0 << 8 : ((uint)s[i * 4 + 1] << 8)) +
-                       ((i * 4 + 2) >= s.Length ? (uint)0 << 16 : ((uint)s[i * 4 + 2] << 16)) +
-                       ((i * 4 + 3) >= s.Length ? (uint)0 << 24 : ((uint)s[i * 4 + 3] << 24));
+                l[i] = s[i * 4] +
+                       (((i * 4) + 1) >= s.Length ? (uint)0 << 8 : ((uint)s[(i * 4) + 1] << 8)) +
+                       (((i * 4) + 2) >= s.Length ? (uint)0 << 16 : ((uint)s[(i * 4) + 2] << 16)) +
+                       (((i * 4) + 3) >= s.Length ? (uint)0 << 24 : ((uint)s[(i * 4) + 3] << 24));
             }
 
             return l;

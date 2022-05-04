@@ -284,7 +284,10 @@ namespace Penguin.Security.Encryption
         /// <param name="cryptBytes">The byte array to decrypt</param>
         /// <param name="password">The password to be used for decryption</param>
         /// <returns>A decrypted byte array</returns>
-        public byte[] AESDecryptBytes(byte[] cryptBytes, SecureString password) => AESEncryptBytes(cryptBytes, password, this._salt);
+        public byte[] AESDecryptBytes(byte[] cryptBytes, SecureString password)
+        {
+            return AESEncryptBytes(cryptBytes, password, this._salt);
+        }
 
         /// <summary>
         /// Encrypts a byte array
@@ -292,7 +295,10 @@ namespace Penguin.Security.Encryption
         /// <param name="clearBytes">The byte array to encrypt</param>
         /// <param name="password">The password to be used for encryption</param>
         /// <returns>A encrypted byte array</returns>
-        public byte[] AESEncryptBytes(byte[] clearBytes, SecureString password) => AESEncryptBytes(clearBytes, password, this._salt);
+        public byte[] AESEncryptBytes(byte[] clearBytes, SecureString password)
+        {
+            return AESEncryptBytes(clearBytes, password, this._salt);
+        }
 
         /// <summary>
         /// Decrypts an AES encrypted string
@@ -300,7 +306,10 @@ namespace Penguin.Security.Encryption
         /// <param name="cipherText">The encrypted string</param>
         /// <param name="sharedSecret">The decryption password</param>
         /// <returns>A decrypted string</returns>
-        public string DecryptStringAES(string cipherText, string sharedSecret) => DecryptStringAES(cipherText, sharedSecret, this._salt);
+        public string DecryptStringAES(string cipherText, string sharedSecret)
+        {
+            return DecryptStringAES(cipherText, sharedSecret, this._salt);
+        }
 
         /// <summary>
         /// Encrypts a string with AES
@@ -308,7 +317,10 @@ namespace Penguin.Security.Encryption
         /// <param name="plainText">The string to encrypt</param>
         /// <param name="sharedSecret">The decryption password</param>
         /// <returns>An encrypted string</returns>
-        public string EncryptStringAES(string plainText, string sharedSecret) => EncryptStringAES(plainText, sharedSecret, this._salt);
+        public string EncryptStringAES(string plainText, string sharedSecret)
+        {
+            return EncryptStringAES(plainText, sharedSecret, this._salt);
+        }
 
         #endregion Methods
 
