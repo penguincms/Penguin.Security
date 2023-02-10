@@ -21,7 +21,7 @@ namespace Penguin.Security.Encryption
         /// <param name="salt">The salt to be used when encrypting/decrypting</param>
         public AES(string salt)
         {
-            this._salt = Encoding.ASCII.GetBytes(salt);
+            _salt = Encoding.ASCII.GetBytes(salt);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Penguin.Security.Encryption
         /// <param name="salt">The salt to be used when encrypting/decrypting</param>
         public AES(byte[] salt)
         {
-            this._salt = salt;
+            _salt = salt;
         }
 
         #endregion Constructors
@@ -53,30 +53,24 @@ namespace Penguin.Security.Encryption
 
             byte[] clearBytes = null;
 
-            using (SecureStringBytes secureStringBytes = new SecureStringBytes(password))
+            using (SecureStringBytes secureStringBytes = new(password))
             {
                 // create a key from the password and salt, use 32K iterations
-                using (Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(secureStringBytes.GetBytes(), saltBytes, 32768))
+                using Rfc2898DeriveBytes key = new(secureStringBytes.GetBytes(), saltBytes, 32768);
+                using Aes aes = new AesManaged();
+                // set the key size to 256
+                aes.KeySize = 256;
+                aes.Key = key.GetBytes(aes.KeySize / 8);
+                aes.IV = key.GetBytes(aes.BlockSize / 8);
+
+                using MemoryStream ms = new();
+                using (CryptoStream cs = new(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
                 {
-                    using (Aes aes = new AesManaged())
-                    {
-                        // set the key size to 256
-                        aes.KeySize = 256;
-                        aes.Key = key.GetBytes(aes.KeySize / 8);
-                        aes.IV = key.GetBytes(aes.BlockSize / 8);
-
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
-                            {
-                                cs.Write(cryptBytes, 0, cryptBytes.Length);
-                                cs.Close();
-                            }
-
-                            clearBytes = ms.ToArray();
-                        }
-                    }
+                    cs.Write(cryptBytes, 0, cryptBytes.Length);
+                    cs.Close();
                 }
+
+                clearBytes = ms.ToArray();
             }
 
             return clearBytes;
@@ -108,30 +102,24 @@ namespace Penguin.Security.Encryption
 
             byte[] encryptedBytes = null;
 
-            using (SecureStringBytes secureStringBytes = new SecureStringBytes(password))
+            using (SecureStringBytes secureStringBytes = new(password))
             {
                 // create a key from the password and salt, use 32K iterations – see note
-                using (Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(secureStringBytes.GetBytes(), saltBytes, 32768))
+                using Rfc2898DeriveBytes key = new(secureStringBytes.GetBytes(), saltBytes, 32768);
+                // create an AES object
+                using Aes aes = new AesManaged();
+                // set the key size to 256
+                aes.KeySize = 256;
+                aes.Key = key.GetBytes(aes.KeySize / 8);
+                aes.IV = key.GetBytes(aes.BlockSize / 8);
+                using MemoryStream ms = new();
+                using (CryptoStream cs = new(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
                 {
-                    // create an AES object
-                    using (Aes aes = new AesManaged())
-                    {
-                        // set the key size to 256
-                        aes.KeySize = 256;
-                        aes.Key = key.GetBytes(aes.KeySize / 8);
-                        aes.IV = key.GetBytes(aes.BlockSize / 8);
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                            {
-                                cs.Write(clearBytes, 0, clearBytes.Length);
-                                cs.Close();
-                            }
-
-                            encryptedBytes = ms.ToArray();
-                        }
-                    }
+                    cs.Write(clearBytes, 0, clearBytes.Length);
+                    cs.Close();
                 }
+
+                encryptedBytes = ms.ToArray();
             }
 
             return encryptedBytes;
@@ -167,43 +155,32 @@ namespace Penguin.Security.Encryption
             try
             {
                 // generate the key from the shared secret and the salt
-                using (Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, salt))
+                using Rfc2898DeriveBytes key = new(sharedSecret, salt);
+                // Create the streams used for decryption.
+                byte[] bytes = Convert.FromBase64String(cipherText);
+                using MemoryStream msDecrypt = new(bytes);
+                // Create a RijndaelManaged object
+                // with the specified key and IV.
+                using (aesAlg = new RijndaelManaged())
                 {
-                    // Create the streams used for decryption.
-                    byte[] bytes = Convert.FromBase64String(cipherText);
-                    using (MemoryStream msDecrypt = new MemoryStream(bytes))
-                    {
-                        // Create a RijndaelManaged object
-                        // with the specified key and IV.
-                        using (aesAlg = new RijndaelManaged())
-                        {
-                            aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
+                    aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
 
-                            // Get the initialization vector from the encrypted stream
-                            aesAlg.IV = ReadByteArray(msDecrypt);
+                    // Get the initialization vector from the encrypted stream
+                    aesAlg.IV = ReadByteArray(msDecrypt);
 
-                            // Create a decrytor to perform the stream transform.
-                            ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                            using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                            {
-                                using (StreamReader Decrypt = new StreamReader(csDecrypt))
-                                {
-                                    // Read the decrypted bytes from the decrypting stream
-                                    // and place them in a string.
-                                    plaintext = Decrypt.ReadToEnd();
-                                }
-                            }
-                        }
-                    }
+                    // Create a decrytor to perform the stream transform.
+                    ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+                    using CryptoStream csDecrypt = new(msDecrypt, decryptor, CryptoStreamMode.Read);
+                    using StreamReader Decrypt = new(csDecrypt);
+                    // Read the decrypted bytes from the decrypting stream
+                    // and place them in a string.
+                    plaintext = Decrypt.ReadToEnd();
                 }
             }
             finally
             {
                 // Clear the RijndaelManaged object.
-                if (aesAlg != null)
-                {
-                    aesAlg.Clear();
-                }
+                aesAlg?.Clear();
             }
 
             return plaintext;
@@ -235,43 +212,34 @@ namespace Penguin.Security.Encryption
             try
             {
                 // generate the key from the shared secret and the salt
-                using (Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(sharedSecret, salt))
+                using Rfc2898DeriveBytes key = new(sharedSecret, salt);
+                // Create a RijndaelManaged object
+                using (aesAlg = new RijndaelManaged())
                 {
-                    // Create a RijndaelManaged object
-                    using (aesAlg = new RijndaelManaged())
+                    aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
+
+                    // Create a decryptor to perform the stream transform.
+                    ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+
+                    // Create the streams used for encryption.
+                    using MemoryStream msEncrypt = new();
+                    // prepend the IV
+                    msEncrypt.Write(BitConverter.GetBytes(aesAlg.IV.Length), 0, sizeof(int));
+                    msEncrypt.Write(aesAlg.IV, 0, aesAlg.IV.Length);
+                    using (CryptoStream csEncrypt = new(msEncrypt, encryptor, CryptoStreamMode.Write))
                     {
-                        aesAlg.Key = key.GetBytes(aesAlg.KeySize / 8);
-
-                        // Create a decryptor to perform the stream transform.
-                        ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-                        // Create the streams used for encryption.
-                        using (MemoryStream msEncrypt = new MemoryStream())
-                        {
-                            // prepend the IV
-                            msEncrypt.Write(BitConverter.GetBytes(aesAlg.IV.Length), 0, sizeof(int));
-                            msEncrypt.Write(aesAlg.IV, 0, aesAlg.IV.Length);
-                            using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                            {
-                                using (StreamWriter Encrypt = new StreamWriter(csEncrypt))
-                                {
-                                    // Write all data to the stream.
-                                    Encrypt.Write(plainText);
-                                }
-                            }
-
-                            outStr = Convert.ToBase64String(msEncrypt.ToArray());
-                        }
+                        using StreamWriter Encrypt = new(csEncrypt);
+                        // Write all data to the stream.
+                        Encrypt.Write(plainText);
                     }
+
+                    outStr = Convert.ToBase64String(msEncrypt.ToArray());
                 }
             }
             finally
             {
                 // Clear the RijndaelManaged object.
-                if (aesAlg != null)
-                {
-                    aesAlg.Clear();
-                }
+                aesAlg.Clear();
             }
 
             // Return the encrypted bytes from the memory stream.
@@ -286,7 +254,7 @@ namespace Penguin.Security.Encryption
         /// <returns>A decrypted byte array</returns>
         public byte[] AESDecryptBytes(byte[] cryptBytes, SecureString password)
         {
-            return AESEncryptBytes(cryptBytes, password, this._salt);
+            return AESEncryptBytes(cryptBytes, password, _salt);
         }
 
         /// <summary>
@@ -297,7 +265,7 @@ namespace Penguin.Security.Encryption
         /// <returns>A encrypted byte array</returns>
         public byte[] AESEncryptBytes(byte[] clearBytes, SecureString password)
         {
-            return AESEncryptBytes(clearBytes, password, this._salt);
+            return AESEncryptBytes(clearBytes, password, _salt);
         }
 
         /// <summary>
@@ -308,7 +276,7 @@ namespace Penguin.Security.Encryption
         /// <returns>A decrypted string</returns>
         public string DecryptStringAES(string cipherText, string sharedSecret)
         {
-            return DecryptStringAES(cipherText, sharedSecret, this._salt);
+            return DecryptStringAES(cipherText, sharedSecret, _salt);
         }
 
         /// <summary>
@@ -319,7 +287,7 @@ namespace Penguin.Security.Encryption
         /// <returns>An encrypted string</returns>
         public string EncryptStringAES(string plainText, string sharedSecret)
         {
-            return EncryptStringAES(plainText, sharedSecret, this._salt);
+            return EncryptStringAES(plainText, sharedSecret, _salt);
         }
 
         #endregion Methods
@@ -339,12 +307,7 @@ namespace Penguin.Security.Encryption
             }
 
             byte[] buffer = new byte[BitConverter.ToInt32(rawLength, 0)];
-            if (s.Read(buffer, 0, buffer.Length) != buffer.Length)
-            {
-                throw new SystemException("Did not read byte array properly");
-            }
-
-            return buffer;
+            return s.Read(buffer, 0, buffer.Length) != buffer.Length ? throw new SystemException("Did not read byte array properly") : buffer;
         }
     }
 }
