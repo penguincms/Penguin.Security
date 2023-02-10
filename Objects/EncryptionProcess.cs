@@ -44,7 +44,7 @@ namespace Penguin.Security.Objects
         /// <param name="file">The file path of the encrypted file</param>
         public EncryptionProcess(SecureString password, string salt, string file)
         {
-            this.Init(password, Encoding.ASCII.GetBytes(salt), file);
+            Init(password, Encoding.ASCII.GetBytes(salt), file);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Penguin.Security.Objects
         /// <param name="file">The file path of the encrypted file</param>
         public EncryptionProcess(SecureString password, byte[] salt, string file)
         {
-            this.Init(password, salt, file);
+            Init(password, salt, file);
         }
 
         #endregion Constructors
@@ -69,16 +69,16 @@ namespace Penguin.Security.Objects
         /// <param name="e">Unused</param>
         public void CleanUp(object sender, EventArgs e)
         {
-            this.Watcher.Dispose();
-            this.Watcher = null;
+            Watcher.Dispose();
+            Watcher = null;
 
-            while (this.IsLocked())
+            while (IsLocked())
             {
                 System.Threading.Thread.Sleep(100);
             }
 
-            this.UpdateOriginal();
-            EncryptedFile.Delete(this.TempFilePath, new Random());
+            UpdateOriginal();
+            EncryptedFile.Delete(TempFilePath, new Random());
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Penguin.Security.Objects
         /// </summary>
         public void CleanUp()
         {
-            this.CleanUp(null, null);
+            CleanUp(null, null);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Penguin.Security.Objects
 
             try
             {
-                stream = new FileInfo(this.TempFilePath).Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                stream = new FileInfo(TempFilePath).Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             }
             catch (IOException)
             {
@@ -107,10 +107,7 @@ namespace Penguin.Security.Objects
             }
             finally
             {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
+                stream?.Close();
             }
 
             return false;
@@ -122,12 +119,12 @@ namespace Penguin.Security.Objects
         /// <returns>The running process accessing the file</returns>
         public new EncryptionProcess Start()
         {
-            File.WriteAllBytes(this.TempFilePath, this.Crypto.AESDecryptBytes(File.ReadAllBytes(this.OriginalFilePath), this.Key));
-            this.Watcher.EnableRaisingEvents = true;
+            File.WriteAllBytes(TempFilePath, Crypto.AESDecryptBytes(File.ReadAllBytes(OriginalFilePath), Key));
+            Watcher.EnableRaisingEvents = true;
 
-            string ext = System.IO.Path.GetExtension(this.TempFilePath); // get extension
+            string ext = System.IO.Path.GetExtension(TempFilePath); // get extension
 
-            StringBuilder sb = new StringBuilder(500); // buffer for exe file path
+            StringBuilder sb = new(500); // buffer for exe file path
             uint size = 500; // buffer size
 
             /*Get associated app*/
@@ -135,14 +132,14 @@ namespace Penguin.Security.Objects
 
             if (res != 0)
             {
-                this.StartInfo = new ProcessStartInfo(this.TempFilePath); // can't get app, use standard method
+                StartInfo = new ProcessStartInfo(TempFilePath); // can't get app, use standard method
             }
             else
             {
-                this.StartInfo = new ProcessStartInfo(sb.ToString(), this.TempFilePath);
+                StartInfo = new ProcessStartInfo(sb.ToString(), TempFilePath);
             }
 
-            this.StartInfo = new System.Diagnostics.ProcessStartInfo(this.TempFilePath);
+            StartInfo = new System.Diagnostics.ProcessStartInfo(TempFilePath);
 
             _ = base.Start();
 
@@ -204,17 +201,17 @@ namespace Penguin.Security.Objects
 
         private SecureString Key { get; set; }
 
-        [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [Out] StringBuilder pszOut, ref uint pcchOut);
 
         private void Init(SecureString password, byte[] salt, string file)
         {
-            this.Crypto = new AES(salt);
-            this.Key = password;
-            this.EnableRaisingEvents = true;
-            Exited += this.CleanUp;
+            Crypto = new AES(salt);
+            Key = password;
+            EnableRaisingEvents = true;
+            Exited += CleanUp;
 
-            this.OriginalFilePath = file;
+            OriginalFilePath = file;
 
             string tempFileDir = Path.Combine(Path.GetTempPath(), "Encrypted");
 
@@ -223,17 +220,17 @@ namespace Penguin.Security.Objects
                 _ = Directory.CreateDirectory(tempFileDir);
             }
 
-            this.TempFilePath = Path.Combine(tempFileDir, Path.GetRandomFileName() + Path.GetExtension(Path.GetFileNameWithoutExtension(this.OriginalFilePath)));
+            TempFilePath = Path.Combine(tempFileDir, Path.GetRandomFileName() + Path.GetExtension(Path.GetFileNameWithoutExtension(OriginalFilePath)));
 
-            FileInfo tempFileInfo = new FileInfo(this.TempFilePath);
+            FileInfo tempFileInfo = new(TempFilePath);
 
-            this.Watcher = new FileSystemWatcher
+            Watcher = new FileSystemWatcher
             {
-                Path = new FileInfo(this.TempFilePath).Directory.FullName,
-                Filter = new FileInfo(this.TempFilePath).Name
+                Path = new FileInfo(TempFilePath).Directory.FullName,
+                Filter = new FileInfo(TempFilePath).Name
             };
 
-            this.Watcher.Changed += this.Watcher_Changed;
+            Watcher.Changed += Watcher_Changed;
         }
 
         private void UpdateOriginal()
@@ -244,7 +241,7 @@ namespace Penguin.Security.Objects
             {
                 try
                 {
-                    File.WriteAllBytes(this.OriginalFilePath, this.Crypto.AESEncryptBytes(File.ReadAllBytes(this.TempFilePath), this.Key));
+                    File.WriteAllBytes(OriginalFilePath, Crypto.AESEncryptBytes(File.ReadAllBytes(TempFilePath), Key));
                     success = true;
                 }
                 catch (Exception ex)
@@ -264,9 +261,9 @@ namespace Penguin.Security.Objects
 
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            this.Watcher.EnableRaisingEvents = false;
-            this.UpdateOriginal();
-            this.Watcher.EnableRaisingEvents = true;
+            Watcher.EnableRaisingEvents = false;
+            UpdateOriginal();
+            Watcher.EnableRaisingEvents = true;
         }
     }
 }

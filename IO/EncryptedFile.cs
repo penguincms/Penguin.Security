@@ -19,8 +19,8 @@ namespace Penguin.Security.IO
         /// <param name="salt">The salt used to access the file</param>
         public EncryptedFile(FileInfo file, string salt)
         {
-            this.TargetFile = file;
-            this.Crypto = new AES(salt);
+            TargetFile = file;
+            Crypto = new AES(salt);
         }
 
         /// <summary>
@@ -30,8 +30,8 @@ namespace Penguin.Security.IO
         /// <param name="salt">The salt used to access the file</param>
         public EncryptedFile(string filePath, string salt)
         {
-            this.TargetFile = new FileInfo(filePath);
-            this.Crypto = new AES(salt);
+            TargetFile = new FileInfo(filePath);
+            Crypto = new AES(salt);
         }
 
         /// <summary>
@@ -41,8 +41,8 @@ namespace Penguin.Security.IO
         /// <param name="salt">The salt used to access the file</param>
         public EncryptedFile(FileInfo file, byte[] salt)
         {
-            this.TargetFile = file;
-            this.Crypto = new AES(salt);
+            TargetFile = file;
+            Crypto = new AES(salt);
         }
 
         /// <summary>
@@ -52,8 +52,8 @@ namespace Penguin.Security.IO
         /// <param name="salt">The salt used to access the file</param>
         public EncryptedFile(string filePath, byte[] salt)
         {
-            this.TargetFile = new FileInfo(filePath);
-            this.Crypto = new AES(salt);
+            TargetFile = new FileInfo(filePath);
+            Crypto = new AES(salt);
         }
 
         #endregion Constructors
@@ -67,7 +67,7 @@ namespace Penguin.Security.IO
         /// <param name="r">An optional Random to be used to flush the file before deleting</param>
         public static void Delete(string filePath, Random r = null)
         {
-            r = r ?? new Random();
+            r ??= new Random();
 
             byte[] randomBytes = new byte[new FileInfo(filePath).Length];
             r.NextBytes(randomBytes);
@@ -81,7 +81,7 @@ namespace Penguin.Security.IO
         /// </summary>
         public void Delete()
         {
-            Delete(this.TargetFile.FullName, this.Random);
+            Delete(TargetFile.FullName, Random);
         }
 
         /// <summary>
@@ -90,26 +90,9 @@ namespace Penguin.Security.IO
         /// <param name="password">The password for the file</param>
         /// <returns>A decrypted byte array representing the file contents</returns>
 
-        /* Unmerged change from project 'Penguin.Security.Local (net5.0)'
-        Before:
-                public byte[] ReadAllBytes(SecureString password) => this.Crypto.AESDecryptBytes(File.ReadAllBytes(this.TargetFile.FullName), password);
-        After:
-                public byte[] ReadAllBytes(SecureString password)
-                {
-                    return this.Crypto.AESDecryptBytes(File.ReadAllBytes(this.TargetFile.FullName), password);
-        */
-
-        /* Unmerged change from project 'Penguin.Security.Local (netstandard2.1)'
-        Before:
-                public byte[] ReadAllBytes(SecureString password) => this.Crypto.AESDecryptBytes(File.ReadAllBytes(this.TargetFile.FullName), password);
-        After:
-                public byte[] ReadAllBytes(SecureString password)
-                {
-                    return this.Crypto.AESDecryptBytes(File.ReadAllBytes(this.TargetFile.FullName), password);
-        */
         public byte[] ReadAllBytes(SecureString password)
         {
-            return this.Crypto.AESDecryptBytes(File.ReadAllBytes(this.TargetFile.FullName), password);
+            return Crypto.AESDecryptBytes(File.ReadAllBytes(TargetFile.FullName), password);
         }
 
         /// <summary>
@@ -119,7 +102,7 @@ namespace Penguin.Security.IO
         /// <param name="password">The password to use to encrypt the file contents</param>
         public void WriteAllBytes(byte[] bytes, SecureString password)
         {
-            File.WriteAllBytes(this.TargetFile.FullName, this.Crypto.AESEncryptBytes(bytes, password));
+            File.WriteAllBytes(TargetFile.FullName, Crypto.AESEncryptBytes(bytes, password));
         }
 
         #endregion Methods

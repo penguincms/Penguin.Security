@@ -29,14 +29,14 @@ namespace Penguin.Security.Objects
         /// </summary>
         public void Clear()
         {
-            if (this.bytes != null)
+            if (bytes != null)
             {
-                for (int i = 0; i < this.bytes.Length; i++)
+                for (int i = 0; i < bytes.Length; i++)
                 {
-                    this.bytes[i] = 0;
+                    bytes[i] = 0;
                 }
 
-                this.bytes = null;
+                bytes = null;
             }
         }
 
@@ -45,7 +45,7 @@ namespace Penguin.Security.Objects
         /// </summary>
         public void Dispose()
         {
-            this.Clear();
+            Clear();
         }
 
         /// <summary>
@@ -54,12 +54,9 @@ namespace Penguin.Security.Objects
         /// <returns>A byte array representing this secure string</returns>
         public byte[] GetBytes()
         {
-            if (this.bytes == null)
-            {
-                this.bytes = ConvertSecureStringToBytes(this.secureString);
-            }
+            bytes ??= ConvertSecureStringToBytes(secureString);
 
-            return this.bytes;
+            return bytes;
         }
 
         #endregion Methods

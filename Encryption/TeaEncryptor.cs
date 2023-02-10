@@ -17,7 +17,7 @@ namespace Penguin.Security.Encryption
         /// <param name="cryptoBytes"></param>
         public TeaEncryptor(byte[] cryptoBytes)
         {
-            this._cryptBytes = cryptoBytes;
+            _cryptBytes = cryptoBytes;
         }
 
         #endregion Constructors
@@ -45,7 +45,7 @@ namespace Penguin.Security.Encryption
             try
             {
                 uint[] v = ToLongs(Convert.FromBase64String(encrypted));
-                uint[] k = ToLongs(this._cryptBytes);
+                uint[] k = ToLongs(_cryptBytes);
 
                 if (v.Length == 0)
                 {
@@ -96,7 +96,7 @@ namespace Penguin.Security.Encryption
             uint[] v = ToLongs(textBytes);
 
             // Simply convert first 16 chars of password as key
-            uint[] k = ToLongs(this._cryptBytes);
+            uint[] k = ToLongs(_cryptBytes);
 
             // Use UInt32 as the original is based on 'unsigned long' in C, which is equiv to UInt32 in .Net (and not ulong)
             uint n = (uint)v.Length, z = v[n - 1];
@@ -129,7 +129,7 @@ namespace Penguin.Security.Encryption
         #region Fields
 
         private const short MIN_ENCRYPTION_LENGTH = 6;
-        private static readonly UTF8Encoding _encoding = new UTF8Encoding();
+        private static readonly UTF8Encoding _encoding = new();
         private readonly byte[] _cryptBytes;
 
         #endregion Fields
