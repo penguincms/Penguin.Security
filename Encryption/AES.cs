@@ -180,7 +180,7 @@ namespace Penguin.Security.Encryption
             finally
             {
                 // Clear the RijndaelManaged object.
-                aesAlg?.Clear();
+                aesAlg.Clear();
             }
 
             return plaintext;
